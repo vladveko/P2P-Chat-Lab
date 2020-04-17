@@ -325,7 +325,7 @@ def main_func(username):
             break
 
     # Цикл для отправки сообщений. Для выхода нужно прописать quit
-    while message != "quit()":
+    while message != ".quit":
 
         # Если список пользователей пуст, то в чате никого нет
         if users_list == {}:
@@ -334,7 +334,7 @@ def main_func(username):
         # Вводим сообщение 
         message = input(f"{username}[{local_addr}] > ").strip()
 
-        if message != "quit()":
+        if message != ".quit":
             # Записываем сообщение в историю
             history = open("text.txt", "a")
             history.write(f"{datetime.now()}:>> {username}[{local_addr}] > {message}\n")
@@ -350,6 +350,9 @@ def main_func(username):
                 for user_sock in users_list:
                     user_sock.send(message_header + message)
     
+    exit_lock = threading.Lock()
+    exit_lock.acquire()
+    
     if users_list != {}:
         # Далее кодируем заголовок сообщения, в котором хранится длина сообщения,
         # и само сообщение.
@@ -358,6 +361,9 @@ def main_func(username):
         # И отправляем всем активным пользователям сообщение
         for user_sock in users_list:
             user_sock.send(message_header + message)
+    
+    exit_lock.release()
+    time.sleep(5)
 
     history = open("text.txt", "w")
     history.close()
