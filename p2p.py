@@ -81,24 +81,21 @@ def sendbroadcast(my_username, broadcast_addr):
 """
 def receive_message(client_socket):
     try:
-        # Receive our "header" containing message length, it's size is defined and constant
+        # Получаем заголовок
         message_header = client_socket.recv(HEADER_LEN)
 
-        # If we received no data, client gracefully closed a connection, for example using socket.close() or socket.shutdown(socket.SHUT_RDWR)
+        # Если мы ничего не получили, пользователь закрыл соединение
         if not len(message_header):
             return False
 
-        # Convert header to int value
+        # Конвертируем залоговок в длину сообщения
         message_length = int(message_header[:int(HEADER_LEN/2)].decode('utf-8').strip())
 
-        # Return an object of message header and message data
+        # Возвращаем заголовок и данные
         return {'header': message_header, 'data': client_socket.recv(message_length)}
 
     except:
-        # If we are here, client closed connection violently, for example by pressing ctrl+c on his script
-        # or just lost his connection
-        # socket.close() also invokes socket.shutdown(socket.SHUT_RDWR) what sends information about closing the socket (shutdown read/write)
-        # and that's also a cause when we receive an empty message
+        # На случай ошибок
         return False
 
 
@@ -108,7 +105,7 @@ def receive_message(client_socket):
 def listenbroadcast(broadcast_listener):
     try:
 
-        ready = select.select([broadcast_listener],[],[], 3)
+        ready = select.select([broadcast_listener],[],[], 2)
 
         if ready[0] != []:
             data, addr = broadcast_listener.recvfrom(1024)
@@ -324,6 +321,7 @@ def main_func(username):
         message_header = f"{0 :<{int(HEADER_LEN/2)}}{SEND_HISTORY :<{int(HEADER_LEN/2)}}".encode('utf-8')
         for user_sock in users_list:
             user_sock.send(message_header)
+            time.sleep(3)
             break
 
     # Цикл для отправки сообщений. Для выхода нужно прописать quit
